@@ -6,6 +6,7 @@ import Cronograma from './components/Cronograma';
 import MapaPredio from './components/MapaPredio';
 import Sponsors from './components/Sponsors';
 import Contacto from './components/Contacto';
+import FAQ from './components/FAQ';
 import Footer from './components/Footer';
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
         <MapaPredio />
         <Sponsors />
         <Contacto />
+        <FAQ />
       </main>
       <Footer />
     </div>
