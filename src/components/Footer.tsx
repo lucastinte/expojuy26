@@ -55,9 +55,9 @@ export default function Footer() {
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-5">
               <img
-                src="/expojuy26_isologotipo.png"
+                src="/assets/images/expojuy26_isologotipo.png"
                 alt="EXPOJUY 2026"
-                className="h-12 w-auto"
+                className="h-14 w-auto rounded-lg bg-white/95 px-3 py-1.5 shadow-lg"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
                   const fb = e.currentTarget.nextElementSibling as HTMLElement | undefined;

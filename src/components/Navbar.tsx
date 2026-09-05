@@ -34,9 +34,9 @@ export default function Navbar() {
         {/* Logo */}
         <a href="#inicio" className="flex items-center gap-2 shrink-0">
           <img
-            src="/expojuy26.png"
+            src="/assets/images/expojuy26.png"
             alt="EXPOJUY 2026"
-            className="h-11 w-auto"
+            className="h-11 w-auto rounded-lg bg-white px-2 py-1 shadow-sm"
             onError={(e) => {
               e.currentTarget.style.display = 'none';
               const fallback = e.currentTarget.nextElementSibling as HTMLElement | undefined;
