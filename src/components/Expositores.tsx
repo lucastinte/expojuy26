@@ -1,8 +1,191 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, ArrowRight, Store, Sparkles, Building2 } from 'lucide-react';
+import { CheckCircle, ArrowRight, Store, Sparkles } from 'lucide-react';
 import { Reveal, Stagger, StaggerItem } from './Reveal';
-import { Marquee } from './ui/marquee';
+
+function ExhibitorCard({ exhibitor }: { exhibitor: Exhibitor }) {
+  const style = rubroStyles[exhibitor.rubro];
+  const isGov = exhibitor.entityType === 'Gobierno';
+
+  return (
+    <div className="group relative flex w-[275px] sm:w-[320px] shrink-0 flex-col cursor-pointer transition-all duration-300 hover:-translate-y-1.5 select-none">
+      <div
+        className={`relative h-[410px] sm:h-[440px] w-full overflow-hidden rounded-2xl bg-midnight/90 border border-white/15 ${style.border} shadow-2xl transition-all duration-300 group-hover:shadow-[0_12px_30px_rgba(0,196,204,0.15)]`}
+      >
+        {/* Background Image with grayscale on hover */}
+        <img
+          alt={exhibitor.name}
+          src={exhibitor.image}
+          loading="lazy"
+          onError={(e) => {
+            (e.currentTarget as HTMLImageElement).src =
+              'https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?auto=format&fit=crop&w=800&q=80';
+          }}
+          className="h-full w-full object-cover grayscale brightness-90 transition-all duration-500 group-hover:scale-105 group-hover:grayscale-0 group-hover:brightness-100"
+        />
+
+        {/* Ambient Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-midnight via-midnight/55 to-midnight/20" />
+
+        {/* Top Badges */}
+        <div className="absolute top-3.5 inset-x-3.5 flex items-center justify-between z-10 gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span
+              className={`px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wider backdrop-blur-md border ${style.badge}`}
+            >
+              {exhibitor.rubro}
+            </span>
+            <span
+              className={`px-2 py-0.5 rounded-full text-[10px] font-semibold backdrop-blur-md border ${
+                isGov
+                  ? 'bg-[#A87CFA]/25 text-[#C4A2FF] border-[#A87CFA]/40'
+                  : 'bg-[#00C4CC]/20 text-[#33D4DB] border-[#00C4CC]/40'
+              }`}
+            >
+              {exhibitor.entityType}
+            </span>
+          </div>
+
+          <span className="px-2.5 py-1 rounded-full bg-midnight/80 backdrop-blur-md border border-white/20 text-white font-mono text-[10px] sm:text-[11px] font-semibold shrink-0">
+            Stand {exhibitor.stand}
+          </span>
+        </div>
+
+        {/* Bottom Card details - Person Representative & Entity */}
+        <div className="absolute bottom-0 inset-x-0 p-4 sm:p-5 m-2 sm:m-2.5 rounded-2xl bg-midnight/90 backdrop-blur-xl border border-white/15 group-hover:border-[#00C4CC]/40 transition-all">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="font-bold text-base sm:text-lg text-white truncate group-hover:text-primary transition-colors">
+              {exhibitor.name}
+            </h3>
+            <span className="text-primary text-sm shrink-0 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all">
+              →
+            </span>
+          </div>
+
+          {/* Role and Entity */}
+          <div className="mt-1 flex flex-col">
+            <span className="text-xs font-semibold text-primary truncate">
+              {exhibitor.role}
+            </span>
+            <span className="text-xs font-medium text-white/80 truncate">
+              {exhibitor.entity}
+            </span>
+          </div>
+
+          {/* Stand presentation description */}
+          <p className="text-white/60 text-xs mt-2 line-clamp-2 leading-relaxed">
+            {exhibitor.categoryDesc}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InteractiveExhibitorCarousel({ items }: { items: Exhibitor[] }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [isMouseDown, setIsMouseDown] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const pauseAutoScrollRef = useRef(false);
+  const resumeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const pauseAutoScroll = useCallback(() => {
+    pauseAutoScrollRef.current = true;
+    if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+    resumeTimeoutRef.current = setTimeout(() => {
+      pauseAutoScrollRef.current = false;
+    }, 6000);
+  }, []);
+
+  // Gentle auto-scroll when idle
+  useEffect(() => {
+    let animationFrameId: number;
+    let lastTime = performance.now();
+
+    const loop = (time: number) => {
+      const delta = time - lastTime;
+      lastTime = time;
+
+      if (!pauseAutoScrollRef.current && scrollRef.current && !isMouseDown) {
+        const el = scrollRef.current;
+        el.scrollLeft += delta * 0.035;
+        if (el.scrollLeft >= el.scrollWidth - el.clientWidth - 5) {
+          el.scrollLeft = 0;
+        }
+      }
+      animationFrameId = requestAnimationFrame(loop);
+    };
+
+    animationFrameId = requestAnimationFrame(loop);
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+    };
+  }, [isMouseDown]);
+
+  // Mouse drag handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!scrollRef.current) return;
+    setIsMouseDown(true);
+    pauseAutoScroll();
+    setStartX(e.pageX - scrollRef.current.offsetLeft);
+    setScrollLeft(scrollRef.current.scrollLeft);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isMouseDown || !scrollRef.current) return;
+    e.preventDefault();
+    pauseAutoScroll();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 1.5;
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleMouseUpOrLeave = () => {
+    setIsMouseDown(false);
+  };
+
+  // Duplicate items so that there's always plenty of cards to swipe freely
+  const carouselItems = useMemo(() => {
+    if (items.length <= 4) {
+      return [...items, ...items, ...items];
+    }
+    return [...items, ...items];
+  }, [items]);
+
+  return (
+    <div className="relative w-full">
+      {/* Outer scroll track */}
+      <div className="relative w-full overflow-hidden">
+        {/* Subtle gradient edge masks on mobile so cards are completely clear */}
+        <div className="pointer-events-none absolute top-0 left-0 z-20 h-full w-4 sm:w-20 bg-gradient-to-r from-midnight via-midnight/60 to-transparent" />
+        <div className="pointer-events-none absolute top-0 right-0 z-20 h-full w-4 sm:w-20 bg-gradient-to-l from-midnight via-midnight/60 to-transparent" />
+
+        <div
+          ref={scrollRef}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUpOrLeave}
+          onMouseLeave={handleMouseUpOrLeave}
+          onTouchStart={pauseAutoScroll}
+          className={`flex gap-4 sm:gap-6 overflow-x-auto no-scrollbar py-3 px-2 sm:px-6 select-none touch-pan-x cursor-grab [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${
+            isMouseDown ? 'cursor-grabbing' : ''
+          }`}
+          style={{
+            WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+          }}
+        >
+          {carouselItems.map((exhibitor, idx) => (
+            <ExhibitorCard key={`${exhibitor.name}-${idx}`} exhibitor={exhibitor} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const benefits = [
   'Visibilidad de marca ante miles de visitantes',
@@ -14,126 +197,185 @@ const benefits = [
 ];
 
 export type Rubro = 'Agro' | 'Minería' | 'Tecnología' | 'Turismo';
+export type SectorType = 'Empresa' | 'Gobierno';
 
 export interface Exhibitor {
-  name: string;
+  name: string;             // Nombre del representante (persona)
+  role: string;             // Cargo o función
+  entity: string;           // Empresa o entidad gubernamental
+  entityType: SectorType;   // 'Empresa' | 'Gobierno'
   rubro: Rubro;
   stand: string;
-  categoryDesc: string;
+  categoryDesc: string;     // Propuesta o descripción de la presentación
   image: string;
 }
 
 const exhibitors: Exhibitor[] = [
+  // ─── AGRO ───────────────────────────────────────────────────────────────
   {
-    name: 'AgroJujuy S.A.',
+    name: 'Ing. Carlos Morales',
+    role: 'Director de Producción Andina',
+    entity: 'AgroJujuy S.A.',
+    entityType: 'Empresa',
     rubro: 'Agro',
     stand: 'A-12',
-    categoryDesc: 'Producción & Agroindustria Andina',
+    categoryDesc: 'Biotecnología en cultivos de altura y tecnificación de riego por goteo.',
     image: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=800&q=80',
   },
   {
-    name: 'Minera Puna',
-    rubro: 'Minería',
-    stand: 'B-05',
-    categoryDesc: 'Litio & Minería Sustentable',
-    image: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    name: 'TechJuy',
-    rubro: 'Tecnología',
-    stand: 'D-01',
-    categoryDesc: 'Software Factory & GovTech',
-    image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    name: 'AeroJujuy',
-    rubro: 'Turismo',
-    stand: 'C-02',
-    categoryDesc: 'Vuelos & Conectividad Regional',
-    image: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    name: 'Vinos del Norte',
+    name: 'Lic. Sofía Calvetti',
+    role: 'Secretaria de Desarrollo Productivo',
+    entity: 'Min. de Desarrollo Económico y Producción',
+    entityType: 'Gobierno',
     rubro: 'Agro',
     stand: 'A-15',
-    categoryDesc: 'Bodegas & Vinos de Gran Altura',
+    categoryDesc: 'Fomento a cooperativas agrícolas y financiamiento para bodegas de altura.',
     image: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=800&q=80',
   },
   {
-    name: 'Energía Andina',
-    rubro: 'Minería',
-    stand: 'B-10',
-    categoryDesc: 'Parques Solares & Energía Limpia',
-    image: 'https://images.unsplash.com/photo-1509391365360-2e959784a276?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    name: 'Telecom NOA',
-    rubro: 'Tecnología',
-    stand: 'D-06',
-    categoryDesc: 'Redes de Alta Velocidad & 5G',
-    image: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    name: 'Hotel Termas',
-    rubro: 'Turismo',
-    stand: 'C-08',
-    categoryDesc: 'Turismo Termal & Hospitalidad',
-    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    name: 'Frutas del Valle',
+    name: 'Ing. Fernando Zamar',
+    role: 'Gerente General de Operaciones',
+    entity: 'Frutas del Valle & Cooperativas NOA',
+    entityType: 'Empresa',
     rubro: 'Agro',
     stand: 'A-20',
-    categoryDesc: 'Cítricos & Frutihorticultura',
+    categoryDesc: 'Cadena de frío y exportación de cítricos y hortalizas a mercados globales.',
     image: 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=800&q=80',
   },
   {
-    name: 'Litio del Norte',
+    name: 'Dr. Marcelo Echenique',
+    role: 'Coordinador de Investigación Genética',
+    entity: 'INTA Jujuy & Semillas Andinas',
+    entityType: 'Gobierno',
+    rubro: 'Agro',
+    stand: 'A-28',
+    categoryDesc: 'Rescate genético de quínoa, maíces nativos y cultivares resistentes a sequía.',
+    image: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&w=800&q=80',
+  },
+
+  // ─── MINERÍA ────────────────────────────────────────────────────────────
+  {
+    name: 'Dra. Lucía Valenzuela',
+    role: 'Gerente de Sustentabilidad y Ambiente',
+    entity: 'Minera Puna & Litio S.A.',
+    entityType: 'Empresa',
+    rubro: 'Minería',
+    stand: 'B-05',
+    categoryDesc: 'Extracción responsable de litio y programas de desarrollo comunitario.',
+    image: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=800&q=80',
+  },
+  {
+    name: 'Ing. Martín Guemes',
+    role: 'Secretario de Minería e Hidrocarburos',
+    entity: 'Gobierno de la Provincia de Jujuy',
+    entityType: 'Gobierno',
+    rubro: 'Minería',
+    stand: 'B-10',
+    categoryDesc: 'Régimen de promoción minera, sustentabilidad ambiental y mapa geológico 2026.',
+    image: 'https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?auto=format&fit=crop&w=800&q=80',
+  },
+  {
+    name: 'Ing. Gastón Carrillo',
+    role: 'VP de Industrialización y Energía',
+    entity: 'Litio del Norte Corp.',
+    entityType: 'Empresa',
     rubro: 'Minería',
     stand: 'B-18',
-    categoryDesc: 'Extracción & Baterías de Litio',
+    categoryDesc: 'Fabricación local de celdas de litio y almacenamiento para microrredes solares.',
     image: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
   },
   {
-    name: 'Software del Valle',
+    name: 'Lic. Daniela Aramayo',
+    role: 'Directora de Obras & Infraestructura',
+    entity: 'Cementos Puna Industrial',
+    entityType: 'Empresa',
+    rubro: 'Minería',
+    stand: 'B-22',
+    categoryDesc: 'Soluciones en hormigón de alta resistencia para campamentos y rutas mineras.',
+    image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80',
+  },
+
+  // ─── TECNOLOGÍA ─────────────────────────────────────────────────────────
+  {
+    name: 'Ing. Lucas Benítez',
+    role: 'Secretario de Modernización del Estado',
+    entity: 'Gobierno de Jujuy - GovTech',
+    entityType: 'Gobierno',
+    rubro: 'Tecnología',
+    stand: 'D-01',
+    categoryDesc: 'Plataforma digital unificada, identidad ciudadana y servicios públicos online.',
+    image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80',
+  },
+  {
+    name: 'Lic. Ramiro Saravia',
+    role: 'Director de Conectividad y Redes 5G',
+    entity: 'Telecom NOA Solutions',
+    entityType: 'Empresa',
+    rubro: 'Tecnología',
+    stand: 'D-06',
+    categoryDesc: 'Despliegue de fibra óptica en alta montaña y enlaces satelitales corporativos.',
+    image: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&w=800&q=80',
+  },
+  {
+    name: 'Dra. Florencia Luque',
+    role: 'Directora del Polo Tecnológico Jujuy',
+    entity: 'Agencia de Ciencia y Tecnología',
+    entityType: 'Gobierno',
     rubro: 'Tecnología',
     stand: 'D-14',
-    categoryDesc: 'Inteligencia Artificial & Cloud',
+    categoryDesc: 'Incubación de startups jujeñas, talento tech y modelos de IA aplicada.',
     image: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80',
   },
   {
-    name: 'Quebrada Tours',
+    name: 'Ing. Gabriel Alurralde',
+    role: 'Fundador & CTO',
+    entity: 'Robótica Andina & Telemetría',
+    entityType: 'Empresa',
+    rubro: 'Tecnología',
+    stand: 'D-19',
+    categoryDesc: 'Vehículos no tripulados e inspección automatizada para la industria del NOA.',
+    image: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=800&q=80',
+  },
+
+  // ─── TURISMO ────────────────────────────────────────────────────────────
+  {
+    name: 'Lic. Mariana Tejerina',
+    role: 'Ministra de Cultura y Turismo',
+    entity: 'Gobierno de la Provincia de Jujuy',
+    entityType: 'Gobierno',
+    rubro: 'Turismo',
+    stand: 'C-02',
+    categoryDesc: 'Estrategia Tren Solar de la Quebrada, conectividad aérea e identidad jujeña.',
+    image: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=800&q=80',
+  },
+  {
+    name: 'Lic. Patricia Snopek',
+    role: 'Presidenta de la Cámara Hotelera',
+    entity: 'Hotel Termas de Reyes & Resorts',
+    entityType: 'Empresa',
+    rubro: 'Turismo',
+    stand: 'C-08',
+    categoryDesc: 'Turismo de bienestar termal, hotelería boutique y turismo de congresos.',
+    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80',
+  },
+  {
+    name: 'Guía Javier Mamaní',
+    role: 'Director de Turismo Comunitario',
+    entity: 'Quebrada Tours & Experiencias',
+    entityType: 'Empresa',
     rubro: 'Turismo',
     stand: 'C-15',
-    categoryDesc: 'Ecoturismo & Paisajes de Altura',
+    categoryDesc: 'Rutas vivenciales en comunidades de Purmamarca, Tilcara y Hornocal.',
     image: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80',
   },
   {
-    name: 'Semillas Puna',
-    rubro: 'Agro',
-    stand: 'A-28',
-    categoryDesc: 'Semillas & Cultivos Andinos',
-    image: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    name: 'Cementos Puna',
-    rubro: 'Minería',
-    stand: 'B-22',
-    categoryDesc: 'Materiales para Grandes Obras',
-    image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    name: 'Robotica Andina',
-    rubro: 'Tecnología',
-    stand: 'D-19',
-    categoryDesc: 'Automatización & Robótica',
-    image: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    name: 'Puna Expediciones',
+    name: 'Lic. Valeria Ramos',
+    role: 'Coordinadora del Ente Norte Turismo',
+    entity: 'Secretaría de Promoción Turística',
+    entityType: 'Gobierno',
     rubro: 'Turismo',
     stand: 'C-21',
-    categoryDesc: 'Expediciones en Salinas y Puna',
+    categoryDesc: 'Promoción turística integrada del Corredor Bioceánico y Salinas Grandes.',
     image: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=80',
   },
 ];
@@ -193,56 +435,6 @@ const plans = [
     highlighted: false,
   },
 ];
-
-function ExhibitorCard({ exhibitor }: { exhibitor: Exhibitor }) {
-  const style = rubroStyles[exhibitor.rubro];
-
-  return (
-    <div className="group relative flex w-72 sm:w-80 shrink-0 flex-col cursor-pointer transition-transform duration-300 hover:-translate-y-1">
-      <div
-        className={`relative h-96 w-full overflow-hidden rounded-2xl bg-midnight/90 border border-white/10 ${style.border} shadow-xl transition-all duration-300`}
-      >
-        {/* Background Image with grayscale on hover */}
-        <img
-          alt={exhibitor.name}
-          src={exhibitor.image}
-          loading="lazy"
-          className="h-full w-full object-cover grayscale brightness-90 transition-all duration-500 group-hover:scale-105 group-hover:grayscale-0 group-hover:brightness-100"
-        />
-
-        {/* Ambient Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-midnight via-midnight/40 to-transparent" />
-
-        {/* Top Badges */}
-        <div className="absolute top-3 inset-x-3 flex items-center justify-between z-10">
-          <span
-            className={`px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider backdrop-blur-md border ${style.badge}`}
-          >
-            {exhibitor.rubro}
-          </span>
-          <span className="px-2.5 py-1 rounded-full bg-midnight/80 backdrop-blur-md border border-white/20 text-white font-mono text-[11px] font-semibold">
-            Stand {exhibitor.stand}
-          </span>
-        </div>
-
-        {/* Bottom Card details */}
-        <div className="absolute bottom-0 inset-x-0 p-4 m-2 rounded-xl bg-midnight/85 backdrop-blur-xl border border-white/10 group-hover:border-white/25 transition-colors">
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="font-bold text-base text-white truncate group-hover:text-primary transition-colors">
-              {exhibitor.name}
-            </h3>
-            <span className="text-primary text-sm shrink-0 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all">
-              →
-            </span>
-          </div>
-          <p className="text-white/60 text-xs mt-1 truncate">
-            {exhibitor.categoryDesc}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export default function Expositores() {
   // 'Todos' means full dual-row marquee; a Rubro means single filtered marquee
@@ -312,9 +504,6 @@ export default function Expositores() {
     return exhibitors.filter((ex) => ex.rubro === activeRubro);
   }, [activeRubro]);
 
-  const row1 = useMemo(() => filtered.slice(0, Math.ceil(filtered.length / 2)), [filtered]);
-  const row2 = useMemo(() => filtered.slice(Math.ceil(filtered.length / 2)), [filtered]);
-
   return (
     <section id="expositores" className="relative py-28 px-4 sm:px-6 lg:px-10 bg-midnight overflow-hidden">
       {/* Ambient background glows */}
@@ -338,8 +527,7 @@ export default function Expositores() {
           </h2>
 
           <p className="mt-5 text-base sm:text-lg text-white/60 leading-relaxed">
-            Descubrí las empresas que formarán parte de la edición 2026. Deslizá sobre las tarjetas
-            o pausá el cursor para explorar cada stand.
+            Conocé a los líderes del sector productivo, empresarial y gubernamental que representan el desarrollo de la región.
           </p>
         </Reveal>
 
@@ -431,53 +619,18 @@ export default function Expositores() {
           </div>
         )}
 
-        {/* Marquee Showcase with Fade Gradients */}
-        <div className="relative w-full overflow-hidden py-4">
-          {/* Left & Right gradient fades seamlessly into midnight */}
-          <div className="pointer-events-none absolute top-0 left-0 z-20 h-full w-24 sm:w-36 bg-gradient-to-r from-midnight via-midnight/80 to-transparent" />
-          <div className="pointer-events-none absolute top-0 right-0 z-20 h-full w-24 sm:w-36 bg-gradient-to-l from-midnight via-midnight/80 to-transparent" />
-
+        {/* Interactive Carousel with Speed Navigation and Touch Swipe */}
+        <div className="relative w-full py-2">
           <AnimatePresence mode="wait">
-            {activeRubro === 'Todos' ? (
-              /* Dual-row marquee for all exhibitors */
-              <motion.div
-                key="todos"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.4 }}
-                className="flex flex-col gap-6"
-              >
-                {/* Row 1 - Left to right */}
-                <Marquee className="[--gap:1.5rem] [--duration:45s]" pauseOnHover>
-                  {row1.map((exhibitor) => (
-                    <ExhibitorCard key={exhibitor.name} exhibitor={exhibitor} />
-                  ))}
-                </Marquee>
-
-                {/* Row 2 - Reverse */}
-                <Marquee className="[--gap:1.5rem] [--duration:45s]" reverse pauseOnHover>
-                  {row2.map((exhibitor) => (
-                    <ExhibitorCard key={exhibitor.name} exhibitor={exhibitor} />
-                  ))}
-                </Marquee>
-              </motion.div>
-            ) : (
-              /* Single marquee for active rubro */
-              <motion.div
-                key={activeRubro}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.4 }}
-              >
-                <Marquee className="[--gap:1.5rem] [--duration:30s]" pauseOnHover>
-                  {filtered.map((exhibitor) => (
-                    <ExhibitorCard key={exhibitor.name} exhibitor={exhibitor} />
-                  ))}
-                </Marquee>
-              </motion.div>
-            )}
+            <motion.div
+              key={activeRubro}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.35 }}
+            >
+              <InteractiveExhibitorCarousel items={filtered} />
+            </motion.div>
           </AnimatePresence>
         </div>
 

@@ -106,13 +106,15 @@ export default function Navbar() {
                     <a
                       href={link.href}
                       onClick={() => setMobileOpen(false)}
-                      className="my-1.5 flex items-center justify-between px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#A87CFA]/20 to-[#00C4CC]/15 border border-[#A87CFA]/35 text-white font-semibold text-base shadow-[0_0_15px_rgba(168,124,250,0.2)] active:scale-[0.98] transition-all"
+                      className="flex items-center justify-between py-3 text-base font-semibold text-white/90 hover:text-primary transition-colors group"
                     >
                       <span className="flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-[#00C4CC]" />
-                        {link.label}
+                        <Sparkles className="w-4 h-4 text-primary group-hover:rotate-12 transition-transform" />
+                        <span className="text-white group-hover:text-primary transition-colors">
+                          {link.label}
+                        </span>
                       </span>
-                      <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-[#00C4CC]/20 text-[#00C4CC] border border-[#00C4CC]/30">
+                      <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30">
                         IA
                       </span>
                     </a>
