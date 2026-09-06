@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 export type LogoEntry = {
@@ -206,7 +206,6 @@ export default function LogoCloudSwap({
 }: LogoCloudSwapProps) {
   const [waving, setWaving] = React.useState(false);
   const [selectedTier, setSelectedTier] = React.useState<'All' | 'Platinum' | 'Gold' | 'Silver'>('All');
-  const [viewMode, setViewMode] = React.useState<'card' | 'minimal'>('card');
 
   // Wave trigger function
   const triggerWave = React.useCallback(() => {
@@ -223,8 +222,9 @@ export default function LogoCloudSwap({
   }, [interval]);
 
   // Trigger wave on filter change
-  const handleTierChange = (tier: 'All' | 'Platinum' | 'Gold' | 'Silver') => {
-    setSelectedTier(tier);
+  const handleTierChange = (tier: 'Platinum' | 'Gold' | 'Silver') => {
+    // Clicking the active tier again clears the filter (back to all)
+    setSelectedTier((prev) => (prev === tier ? 'All' : tier));
     triggerWave();
   };
 
@@ -270,16 +270,13 @@ export default function LogoCloudSwap({
           )}
         </div>
 
-        {/* Controls bar: Tiers filter + Wave trigger & View toggle */}
-        <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-6 max-w-5xl mx-auto">
+        {/* Controls bar: Tier filter (centered) */}
+        <div className="mt-10 flex justify-center border-b border-white/10 pb-6 max-w-5xl mx-auto">
           {/* Tier filter tabs */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-            {(['All', 'Platinum', 'Gold', 'Silver'] as const).map((tier) => {
+          <div className="flex flex-wrap justify-center items-center gap-2">
+            {(['Platinum', 'Gold', 'Silver'] as const).map((tier) => {
               const isActive = selectedTier === tier;
-              const count =
-                tier === 'All'
-                  ? logos.length
-                  : logos.filter((l) => l.tier === tier).length;
+              const count = logos.filter((l) => l.tier === tier).length;
 
               return (
                 <button
@@ -292,7 +289,7 @@ export default function LogoCloudSwap({
                       : 'text-white/60 hover:text-white hover:bg-white/5 border border-white/5'
                   )}
                 >
-                  {tier === 'All' ? 'Todos los Sponsors' : tier}
+                  {tier}
                   <span
                     className={cn(
                       'text-[10px] px-1.5 py-0.2 rounded-full font-mono',
@@ -306,87 +303,24 @@ export default function LogoCloudSwap({
             })}
           </div>
 
-          {/* Right side controls: Trigger Wave + View switch */}
-          <div className="flex items-center gap-3">
-            {/* Trigger wave button */}
-            <button
-              onClick={triggerWave}
-              title="Disparar efecto ola de 21st.dev"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-white/80 hover:text-white transition-all duration-200 active:scale-95"
-            >
-              <span className={cn('w-2 h-2 rounded-full bg-primary', waving && 'animate-ping')} />
-              <span>{waving ? 'Efecto ola activo' : 'Repetir ola'}</span>
-            </button>
-
-            {/* View mode toggle */}
-            <div className="hidden sm:flex items-center rounded-xl bg-white/[0.04] border border-white/10 p-0.5">
-              <button
-                onClick={() => setViewMode('card')}
-                className={cn(
-                  'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
-                  viewMode === 'card'
-                    ? 'bg-primary text-midnight font-bold'
-                    : 'text-white/60 hover:text-white'
-                )}
-              >
-                Cards
-              </button>
-              <button
-                onClick={() => setViewMode('minimal')}
-                className={cn(
-                  'px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
-                  viewMode === 'minimal'
-                    ? 'bg-primary text-midnight font-bold'
-                    : 'text-white/60 hover:text-white'
-                )}
-              >
-                Cloud 21dev
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* Logos Container with 21st.dev Wipe Animation */}
         <div className="mx-auto mt-8 max-w-6xl min-h-[300px]">
-          <AnimatePresence mode="wait">
-            {viewMode === 'minimal' ? (
-              <div
-                key="minimal"
-                className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 lg:gap-8 py-6"
-              >
-                {filteredLogos.map((logo, i) => (
-                  <LogoItem
-                    key={logo.id ?? logo.name}
-                    logo={logo}
-                    index={i}
-                    isWaving={waving}
-                    stagger={stagger}
-                    totalCount={filteredLogos.length}
-                    onDone={() => setWaving(false)}
-                    variant="minimal"
-                  />
-                ))}
-              </div>
-            ) : (
-              <div
-                key="cards"
-                className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 py-4"
-              >
-                {filteredLogos.map((logo, i) => (
-                  <LogoItem
-                    key={logo.id ?? logo.name}
-                    logo={logo}
-                    index={i}
-                    isWaving={waving}
-                    stagger={stagger}
-                    totalCount={filteredLogos.length}
-                    onDone={() => setWaving(false)}
-                    variant="card"
-                  />
-                ))}
-              </div>
-            )}
-          </AnimatePresence>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 py-4">
+            {filteredLogos.map((logo, i) => (
+              <LogoItem
+                key={logo.id ?? logo.name}
+                logo={logo}
+                index={i}
+                isWaving={waving}
+                stagger={stagger}
+                totalCount={filteredLogos.length}
+                onDone={() => setWaving(false)}
+                variant="card"
+              />
+            ))}
+          </div>
         </div>
 
         {/* Bottom Call to Action for Sponsors */}

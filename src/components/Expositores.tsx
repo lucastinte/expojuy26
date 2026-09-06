@@ -138,7 +138,7 @@ const exhibitors: Exhibitor[] = [
   },
 ];
 
-const rubros: (Rubro | 'Todos')[] = ['Todos', 'Agro', 'Minería', 'Tecnología', 'Turismo'];
+const rubros: Rubro[] = ['Agro', 'Minería', 'Tecnología', 'Turismo'];
 
 /** Rubros that participate in the auto-cycle (excludes 'Todos') */
 const cycleRubros: Rubro[] = ['Agro', 'Minería', 'Tecnología', 'Turismo'];
@@ -347,10 +347,7 @@ export default function Expositores() {
         <div className="flex flex-wrap items-center justify-center gap-2.5 mb-10">
           {rubros.map((rubro) => {
             const isActive = activeRubro === rubro;
-            const count =
-              rubro === 'Todos'
-                ? exhibitors.length
-                : exhibitors.filter((e) => e.rubro === rubro).length;
+            const count = exhibitors.filter((e) => e.rubro === rubro).length;
 
             return (
               <button
@@ -361,7 +358,7 @@ export default function Expositores() {
                   : 'glass-dark text-white/60 border-white/10 hover:text-white hover:border-white/30'
                   }`}
               >
-                <span>{rubro === 'Todos' ? 'Todos los rubros' : rubro}</span>
+                <span>{rubro}</span>
                 <span
                   className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold ${isActive ? 'bg-midnight/15 text-midnight' : 'bg-white/10 text-white/70'
                     }`}
@@ -431,13 +428,6 @@ export default function Expositores() {
                 </button>
               );
             })}
-
-            {/* Resume indicator */}
-            {!isCycling && (
-              <span className="ml-4 text-[10px] text-white/30 font-medium italic">
-                auto-ciclo pausado
-              </span>
-            )}
           </div>
         )}
 
