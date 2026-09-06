@@ -1,5 +1,5 @@
 import { Reveal } from './Reveal';
-import { Calendar, MapPin, Mail, Phone, ArrowRight } from 'lucide-react';
+import { Calendar, MapPin, Mail, Phone, ArrowRight, Linkedin, Instagram } from 'lucide-react';
 
 const footerLinks = [
   {
@@ -53,23 +53,12 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           {/* Brand */}
           <div className="md:col-span-2">
-            <div className="flex items-center gap-3 mb-5">
+            <div className="flex items-center mb-6">
               <img
-                src="/assets/images/expojuy26_isologotipo.png"
+                src="/assets/images/expojuy_isotipo.png"
                 alt="EXPOJUY 2026"
-                className="h-14 w-auto rounded-lg bg-white/95 px-3 py-1.5 shadow-lg"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                  const fb = e.currentTarget.nextElementSibling as HTMLElement | undefined;
-                  if (fb) fb.style.display = 'flex';
-                }}
+                className="h-16 w-auto object-contain drop-shadow-[0_4px_20px_rgba(0,196,204,0.35)]"
               />
-              <span
-                className="hidden items-center gap-1 text-2xl font-extrabold"
-                style={{ display: 'none' }}
-              >
-                EXPO<span className="text-primary">JUY</span>
-              </span>
             </div>
             <p className="text-white/50 text-sm leading-relaxed max-w-md">
               La exposición de negocios más importante del NOA. Conectando
@@ -86,6 +75,48 @@ export default function Footer() {
               <p className="flex items-center gap-2 text-white/60 text-sm">
                 <MapPin className="w-4 h-4" /> San Salvador de Jujuy, Argentina
               </p>
+            </div>
+
+            {/* Redes Sociales */}
+            <div className="mt-8 pt-6 border-t border-white/10 max-w-sm">
+              <span className="block text-xs font-bold uppercase tracking-widest text-primary mb-3">
+                Redes Sociales
+              </span>
+              <div className="flex items-center gap-4">
+                <a
+                  href="https://linkedin.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="LinkedIn"
+                  className="text-white hover:text-[#A87CFA] transition-colors duration-300 inline-flex items-center justify-center"
+                >
+                  <Linkedin className="w-5 h-5" />
+                </a>
+                <a
+                  href="https://instagram.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Instagram"
+                  className="text-white hover:text-[#A87CFA] transition-colors duration-300 inline-flex items-center justify-center"
+                >
+                  <Instagram className="w-5 h-5" />
+                </a>
+                <a
+                  href="https://x.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="X"
+                  className="text-white hover:text-[#A87CFA] transition-colors duration-300 inline-flex items-center justify-center"
+                >
+                  <svg
+                    className="w-5 h-5 fill-current"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                </a>
+              </div>
             </div>
           </div>
 

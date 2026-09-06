@@ -4,6 +4,7 @@ import Pillars from './components/Pillars';
 import Expositores from './components/Expositores';
 import Cronograma from './components/Cronograma';
 import MapaPredio from './components/MapaPredio';
+import Novedades from './components/Novedades';
 import Sponsors from './components/Sponsors';
 import Contacto from './components/Contacto';
 import FAQ from './components/FAQ';
@@ -19,6 +20,7 @@ function App() {
         <Expositores />
         <Cronograma />
         <MapaPredio />
+        <Novedades />
         <Sponsors />
         <Contacto />
         <FAQ />
