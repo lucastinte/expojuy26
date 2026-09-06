@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Map as MapIcon, X, Store, UtensilsCrossed, Info, Wifi, Car, Maximize2 } from 'lucide-react';
+import { Map as MapIcon, X, Store, UtensilsCrossed, Info, Wifi, Car, Maximize2, MoveHorizontal } from 'lucide-react';
 import { Reveal } from './Reveal';
 
 type Pavilion = {
@@ -29,6 +29,25 @@ const pavilions: Pavilion[] = [
 
 export default function MapaPredio() {
   const [selected, setSelected] = useState<Pavilion | null>(null);
+  const [showHint, setShowHint] = useState(false);
+  const mapRef = useRef<HTMLDivElement>(null);
+
+  // Show the "swipe" hint when the map scrolls into view on mobile; dismiss on first drag
+  useEffect(() => {
+    const el = mapRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setShowHint(true);
+      },
+      { threshold: 0.4 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const dismissHint = () => setShowHint(false);
 
   return (
     <section id="mapa" className="relative py-28 px-6 lg:px-10 bg-white overflow-hidden">
@@ -68,16 +87,46 @@ export default function MapaPredio() {
             </div>
 
             {/* Map canvas */}
-            <div className="relative w-full aspect-[16/10] rounded-xl bg-gradient-to-br from-gray-100 to-gray-50 border border-gray-200 overflow-hidden">
-              {/* Grid overlay */}
-              <div
-                className="absolute inset-0 opacity-[0.03]"
-                style={{
-                  backgroundImage:
-                    'linear-gradient(rgba(89,37,161,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(89,37,161,0.5) 1px, transparent 1px)',
-                  backgroundSize: '40px 40px',
-                }}
-              />
+            <div
+              ref={mapRef}
+              onTouchMove={dismissHint}
+              onScroll={dismissHint}
+              className="relative w-full overflow-x-auto pb-2 -mx-2 px-2"
+            >
+              <div className="relative w-full min-w-[640px] aspect-[16/10] rounded-xl bg-gradient-to-br from-gray-100 to-gray-50 border border-gray-200 overflow-hidden">
+                {/* Swipe hint (mobile) */}
+                <AnimatePresence>
+                  {showHint && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="sm:hidden pointer-events-none absolute inset-0 z-30 flex flex-col items-center justify-center bg-secondary/20 backdrop-blur-[2px]"
+                    >
+                      <motion.div
+                        animate={{ x: [0, -14, 14, 0] }}
+                        transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+                        className="flex items-center gap-2 px-5 py-3 rounded-full bg-white/90 shadow-xl shadow-secondary/20"
+                      >
+                        <MoveHorizontal className="w-5 h-5 text-secondary" />
+                        <span className="text-sm font-bold text-secondary whitespace-nowrap">
+                          Deslizá para ver todo el predio
+                        </span>
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Grid overlay */}
+                <div
+                  className="absolute inset-0 opacity-[0.03]"
+                  style={{
+                    backgroundImage:
+                      'linear-gradient(rgba(89,37,161,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(89,37,161,0.5) 1px, transparent 1px)',
+                    backgroundSize: '40px 40px',
+                  }}
+                />
 
               {/* Entrance marker */}
               <div className="absolute top-0 left-1/2 -translate-x-1/2 flex flex-col items-center">
@@ -135,6 +184,7 @@ export default function MapaPredio() {
                 <span className="text-[10px] font-black text-secondary">N</span>
                 <span className="absolute top-0.5 w-0 h-0 border-l-[4px] border-r-[4px] border-b-[8px] border-l-transparent border-r-transparent border-b-secondary" />
               </div>
+            </div>
             </div>
 
             {/* Detail card below map (desktop) */}
