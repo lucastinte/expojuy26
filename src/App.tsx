@@ -1,6 +1,7 @@
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Pillars from './components/Pillars';
+import MatchmakerIA from './components/MatchmakerIA';
 import Expositores from './components/Expositores';
 import Cronograma from './components/Cronograma';
 import MapaPredio from './components/MapaPredio';
@@ -17,6 +18,7 @@ function App() {
       <main>
         <Hero />
         <Pillars />
+        <MatchmakerIA />
         <Expositores />
         <Cronograma />
         <MapaPredio />

@@ -1,9 +1,16 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ChevronRight } from 'lucide-react';
+import { Menu, X, ChevronRight, Sparkles } from 'lucide-react';
 
-const navLinks = [
+interface NavLink {
+  label: string;
+  href: string;
+  isAi?: boolean;
+}
+
+const navLinks: NavLink[] = [
   { label: 'Inicio', href: '#inicio' },
+  { label: 'Mi Ruta IA', href: '#matchmaker-ia', isAi: true },
   { label: 'Expositores', href: '#expositores' },
   { label: 'Cronograma', href: '#cronograma' },
   { label: 'Contacto', href: '#contacto' },
@@ -40,16 +47,26 @@ export default function Navbar() {
         </a>
 
         {/* Desktop links - centered mathematically on the page axis */}
-        <ul className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
+        <ul className="hidden md:flex items-center gap-5 lg:gap-8 absolute left-1/2 -translate-x-1/2">
           {navLinks.map((link) => (
             <li key={link.href}>
-              <a
-                href={link.href}
-                className="relative text-sm font-semibold text-white/80 hover:text-white transition-colors duration-200 group"
-              >
-                {link.label}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary rounded-full transition-all duration-300 group-hover:w-full" />
-              </a>
+              {link.isAi ? (
+                <a
+                  href={link.href}
+                  className="relative inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs lg:text-sm font-semibold text-white bg-gradient-to-r from-[#A87CFA]/20 via-[#A87CFA]/10 to-[#00C4CC]/20 border border-[#A87CFA]/40 shadow-[0_0_15px_rgba(168,124,250,0.25)] hover:shadow-[0_0_20px_rgba(0,196,204,0.45)] hover:border-[#00C4CC]/60 hover:scale-105 active:scale-95 transition-all duration-300 group"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-[#00C4CC] group-hover:rotate-12 transition-transform" />
+                  <span>{link.label}</span>
+                </a>
+              ) : (
+                <a
+                  href={link.href}
+                  className="relative text-sm font-semibold text-white/80 hover:text-white transition-colors duration-200 group"
+                >
+                  {link.label}
+                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary rounded-full transition-all duration-300 group-hover:w-full" />
+                </a>
+              )}
             </li>
           ))}
         </ul>
@@ -85,13 +102,29 @@ export default function Navbar() {
             <ul className="px-6 py-4 space-y-1">
               {navLinks.map((link) => (
                 <li key={link.href}>
-                  <a
-                    href={link.href}
-                    onClick={() => setMobileOpen(false)}
-                    className="block py-3 text-base font-semibold text-white/80 hover:text-primary transition-colors"
-                  >
-                    {link.label}
-                  </a>
+                  {link.isAi ? (
+                    <a
+                      href={link.href}
+                      onClick={() => setMobileOpen(false)}
+                      className="my-1.5 flex items-center justify-between px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#A87CFA]/20 to-[#00C4CC]/15 border border-[#A87CFA]/35 text-white font-semibold text-base shadow-[0_0_15px_rgba(168,124,250,0.2)] active:scale-[0.98] transition-all"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-[#00C4CC]" />
+                        {link.label}
+                      </span>
+                      <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-[#00C4CC]/20 text-[#00C4CC] border border-[#00C4CC]/30">
+                        IA
+                      </span>
+                    </a>
+                  ) : (
+                    <a
+                      href={link.href}
+                      onClick={() => setMobileOpen(false)}
+                      className="block py-3 text-base font-semibold text-white/80 hover:text-primary transition-colors"
+                    >
+                      {link.label}
+                    </a>
+                  )}
                 </li>
               ))}
               <li>
