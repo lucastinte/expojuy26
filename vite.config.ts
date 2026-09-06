@@ -8,6 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      'next/image': fileURLToPath(new URL('./src/components/ui/image.tsx', import.meta.url)),
     },
   },
   optimizeDeps: {

@@ -1,6 +1,7 @@
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
 import { ArrowRight, MapPin, Calendar, Sparkles } from 'lucide-react';
+import { TextEffect } from '@/components/ui/text-effect';
 
 export default function Hero() {
   const ref = useRef<HTMLElement>(null);
@@ -78,10 +79,16 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-dark border border-primary/30 mb-6"
         >
-          <Sparkles className="w-4 h-4 text-primary" />
-          <span className="text-xs sm:text-sm font-semibold text-white/90">
+          <Sparkles className="w-4 h-4 text-primary shrink-0" />
+          <TextEffect
+            per="word"
+            as="span"
+            preset="blur"
+            delay={0.3}
+            className="text-xs sm:text-sm font-semibold text-white/90"
+          >
             La exposición de negocios más importante del NOA
-          </span>
+          </TextEffect>
         </motion.div>
 
         {/* Main Brand Logo Banner */}

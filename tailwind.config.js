@@ -29,6 +29,8 @@ export default {
         'slide-up': 'slideUp 0.8s ease-out forwards',
         'float': 'float 6s ease-in-out infinite',
         'glow': 'glow 3s ease-in-out infinite alternate',
+        'marquee': 'marquee var(--duration, 40s) linear infinite',
+        'marquee-vertical': 'marquee-vertical var(--duration, 40s) linear infinite',
       },
       keyframes: {
         fadeIn: {
@@ -46,6 +48,14 @@ export default {
         glow: {
           '0%': { boxShadow: '0 0 20px rgba(0, 196, 204, 0.3)' },
           '100%': { boxShadow: '0 0 40px rgba(0, 196, 204, 0.6)' },
+        },
+        marquee: {
+          from: { transform: 'translateX(0)' },
+          to: { transform: 'translateX(calc(-100% - var(--gap, 1.5rem)))' },
+        },
+        'marquee-vertical': {
+          from: { transform: 'translateY(0)' },
+          to: { transform: 'translateY(calc(-100% - var(--gap, 1.5rem)))' },
         },
       },
     },
