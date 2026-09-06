@@ -24,13 +24,12 @@ export default function Navbar() {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
           ? 'glass-dark border-b border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]'
           : 'bg-transparent'
-      }`}
+        }`}
     >
-      <nav className="max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-20">
+      <nav className="relative max-w-7xl mx-auto px-6 lg:px-10 flex items-center justify-between h-20">
         {/* Logo */}
         <a href="#inicio" className="flex items-center shrink-0 group">
           <img
@@ -40,8 +39,8 @@ export default function Navbar() {
           />
         </a>
 
-        {/* Desktop links */}
-        <ul className="hidden md:flex items-center gap-8">
+        {/* Desktop links - centered mathematically on the page axis */}
+        <ul className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
           {navLinks.map((link) => (
             <li key={link.href}>
               <a
@@ -60,8 +59,7 @@ export default function Navbar() {
           href="#acreditarse"
           className="hidden md:inline-flex items-center gap-1.5 px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-bold shadow-lg shadow-primary/30 hover:bg-primary-dark hover:shadow-primary/40 hover:scale-105 active:scale-95 transition-all duration-300"
         >
-          Acreditarse
-          <ChevronRight className="w-4 h-4" />
+          Participar
         </a>
 
         {/* Mobile toggle */}
@@ -102,7 +100,7 @@ export default function Navbar() {
                   onClick={() => setMobileOpen(false)}
                   className="mt-2 flex items-center justify-center gap-1.5 px-6 py-3 rounded-xl bg-primary text-white text-sm font-bold shadow-lg shadow-primary/30"
                 >
-                  Acreditarse
+                  Participar
                   <ChevronRight className="w-4 h-4" />
                 </a>
               </li>
